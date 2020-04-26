@@ -479,31 +479,11 @@ namespace AtCoderTemplate
         }
 
         /// <summary>
-        /// 試し割り法 O(N√N)
-        /// </summary>
-        /// <param name="n">n > 1</param>
-        /// <returns></returns>
-        public static IEnumerable<int> TrialDivision(int n)
-        {
-            if (!(n > 1)) throw new ArgumentOutOfRangeException();
-
-            var primes = new List<int>();
-            foreach (var i in Enumerable.Range(2, n - 1))
-            {
-                if (primes.TakeWhile(p => p <= Sqrt(i)).All(p => i % p != 0))
-                {
-                    primes.Add(i);
-                }
-            }
-            return primes;
-        }
-
-        /// <summary>
         /// エラトステネスの篩 O(N loglog N)
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static IEnumerable<int> SieveOfEratosthenes(int n)
+        public static IEnumerable<int> Primes(int n)
         {
             if (!(n > 1)) throw new ArgumentOutOfRangeException();
 
@@ -527,7 +507,7 @@ namespace AtCoderTemplate
 
             var e = new int[n + 1];
             var p = n;
-            var ps = SieveOfEratosthenes(n).ToList();
+            var ps = Primes(n).ToList();
             var i = 0;
             while (p != 1)
             {
@@ -546,7 +526,7 @@ namespace AtCoderTemplate
         /// 順列を得る
         /// O(N!)
         /// </summary>
-        public static IEnumerable<IEnumerable<T>> Perm<T>(IEnumerable<T> source, int n)
+        public static IEnumerable<IEnumerable<T>> Perms<T>(IEnumerable<T> source, int n)
         {
             if (n == 0 || source.IsEmpty() || source.Count() < n)
             {
@@ -560,7 +540,7 @@ namespace AtCoderTemplate
             {
                 var nexts = source.Select((x, i) =>
                    new { next = source.Take(i).Concat(source.Skip(i + 1)), selected = source.Take(i + 1).Last() });
-                return nexts.SelectMany(next => Perm(next.next, n - 1).Select(item => item.Prepend(next.selected)));
+                return nexts.SelectMany(next => Perms(next.next, n - 1).Select(item => item.Prepend(next.selected)));
             }
         }
     }
@@ -576,12 +556,12 @@ namespace AtCoderTemplate
         /// <param name="ng">条件を満たさない既知のindex</param>
         /// <param name="ok">条件を満たす既知のindex</param>
         /// <returns>条件を満たすindexの内、隣がfalseとなるtrueのindexを返す</returns>
-        public static int BinarySearch<T>(List<T> list, Func<T, bool> predicate, int ng, int ok)
+        public static long BinarySearch<T>(Func<long, bool> predicate, long ng, long ok)
         {
             while (Abs(ok - ng) > 1)
             {
-                int mid = (ok + ng) / 2;
-                if (predicate(list[mid]))
+                var mid = (ok + ng) / 2L;
+                if (predicate(mid))
                 {
                     ok = mid;
                 }
@@ -591,104 +571,6 @@ namespace AtCoderTemplate
                 }
             }
             return ok;
-        }
-
-        /// <summary>
-        /// 左二分探索法
-        /// </summary>
-        /// <param name="list">条件の境界(falseとtrueの変わるところ)で、trueが左にあるリスト</param>
-        /// <param name="predicate">条件の述語関数</param>
-        /// <returns>右隣がfalseになるtrueのindexを返す</returns>
-        public static int LeftBinarySearch<T>(List<T> list, Func<T, bool> predicate)
-        {
-            return BinarySearch(list, predicate, list.Count, -1);
-        }
-
-        /// <summary>
-        /// 右二分探索法
-        /// </summary>
-        /// <param name="list">条件の境界(falseとtrueの変わるところ)で、trueが右にあるリスト</param>
-        /// <param name="predicate">条件の述語関数</param>
-        /// <returns>左隣がfalseになるtrueのindexを返す</returns>
-        public static int RightBinarySearch<T>(List<T> list, Func<T, bool> predicate)
-        {
-            return BinarySearch(list, predicate, -1, list.Count);
-        }
-
-        // Dictionaryがcapacity近くになるとゲロ重かったので削除
-        // 配列にするかも
-
-        // /// <summary>
-        // /// DynamicProgrammingの形式(貰うDP)
-        // /// 項dp_(i,j,k...)の漸化式、初項、漸化式の計算順序（添字のパターン）、から漸化式を計算する
-        // /// </summary>
-        // /// <param name="calculationOrders">漸化式の計算順序、項dp_(i,j,k...)の添字(i,j,k...)のトポロジカル順序を持つシーケンス</param>
-        // /// <param name="initialConditions">初項とその添字のペア、のシーケンス</param>
-        // /// <param name="recurrenceRelation">項dp_(i,j,k...)の漸化式、以前の項の計算はDictonaryから得る</param>
-        // /// <typeparam name="Indexes">項dp_(i,j,k...)の添字(i,j,k...)</typeparam>
-        // /// <typeparam name="Result">項dp_(i,j,k...)の計算結果</typeparam>
-        // /// <returns>項dp_(i,j,k...)の全ての計算結果をDictionaryで返す</returns>
-        // public static Dictionary<Indexes, Result> DynamicProgramming<Indexes, Result> (
-        //     IEnumerable<Indexes> calculationOrders //
-        //     , IEnumerable<KeyValuePair<Indexes, Result>> initialConditions //
-        //     , Func<Dictionary<Indexes, Result>, Indexes, Result> recurrenceRelation) {
-        //     var conditions = initialConditions.ToDictionary (kv => kv.Key, kv => kv.Value);
-        //     foreach (var order in calculationOrders) {
-        //         conditions.Add (order, recurrenceRelation (conditions, order));
-        //     }
-        //     return conditions;
-        // }
-
-        // .NetFramework 4.6.2 ではタプルの記法がまだ使えない
-
-        // /// <summary>
-        // /// DynamicProgrammingの形式(貰うDP)
-        // /// 項dp_(i,j,k...)の漸化式、初項、漸化式の計算順序（添字のパターン）、から漸化式を計算する
-        // /// </summary>
-        // /// <param name="calculationOrders">漸化式の計算順序、項dp_(i,j,k...)の添字(i,j,k...)のトポロジカル順序を持つシーケンス</param>
-        // /// <param name="initialConditions">初項とその添字のペア、のシーケンス</param>
-        // /// <param name="recurrenceRelation">項dp_(i,j,k...)の漸化式、以前の項の計算はDictonaryから得る</param>
-        // /// <typeparam name="Indexes">項dp_(i,j,k...)の添字(i,j,k...)</typeparam>
-        // /// <typeparam name="Result">項dp_(i,j,k...)の計算結果</typeparam>
-        // /// <returns>項dp_(i,j,k...)の全ての計算結果をDictionaryで返す</returns>
-        // public static Dictionary<Indexes, Result> DynamicProgramming<Indexes, Result> (
-        //     IEnumerable<Indexes> calculationOrders //
-        //     , IEnumerable < (Indexes indexes, Result result) > initialConditions //
-        //     , Func<Dictionary<Indexes, Result>, Indexes, Result> recurrenceRelation) {
-        //     var conditions = initialConditions.ToDictionary (kv => kv.indexes, kv => kv.result);
-        //     foreach (var order in calculationOrders) {
-        //         conditions.Add (order, recurrenceRelation (conditions, order));
-        //     }
-        //     return conditions;
-        // }
-
-        /// <summary>
-        /// 右へのしゃくとり法の形式
-        /// </summary>
-        /// <param name="n">なめるシーケンスの長さ</param>
-        /// <param name="Predicate">更新のための条件関数。indexの(left,right)をとり、条件を満たすとUpdateを行う</param>
-        /// <param name="initialCondition">初期状態。</param>
-        /// <param name="Update">状態更新関数。indexのleft, rightと前のconditionをとり、更新したconditionを返す</param>
-        /// <typeparam name="TR"></typeparam>
-        /// <returns></returns>
-        public static TR TwoPointersRight<TR>(int n, Func<int, int, bool> Predicate, TR initialCondition, Func<int, int, TR, TR> Update)
-        {
-            var l = 0;
-            var r = 0;
-            TR condition = initialCondition;
-            while (r < n)
-            {
-                while (r < n && !Predicate(l, r))
-                {
-                    r += 1;
-                }
-                while (r < n && l != r && Predicate(l, r))
-                {
-                    condition = Update(l, r, condition);
-                    l += 1;
-                }
-            }
-            return condition;
         }
 
         public static void TreeBFS(
@@ -1035,73 +917,9 @@ namespace AtCoderTemplate
 
     public static class MyExtensions
     {
-        // AppendとPrependが、.NET Standard 1.6からの追加で、Mono 4.6.2 はそれに対応して仕様はあるが、実装がない
-        public static IEnumerable<T> Append<T>(this IEnumerable<T> source, T element)
-        {
-            return source.Concat(Enumerable.Repeat(element, 1));
-        }
-
-        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> source, T element)
-        {
-            return Enumerable.Repeat(element, 1).Concat(source);
-        }
-
-        // TakeLastとSkipLastが、.Net Standard 2.1からの追加で、Mono 4.6.2 はそれに対応していない
-        public static IEnumerable<T> TakeLast<T>(this IEnumerable<T> source, int count)
-        {
-            return source.Skip(source.Count() - count);
-        }
-
-        public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int count)
-        {
-            return source.Take(source.Count() - count);
-        }
-
         public static bool IsEmpty<T>(this IEnumerable<T> source)
         {
             return !source.Any();
-        }
-
-        /// <summary>
-        /// シーケンスの要素ごとに副作用を起こす（シーケンスはそのまま）
-        /// </summary>
-        /// <param name="source">シーケンス</param>
-        /// <param name="action">副作用。要素をとるアクション</param>
-        /// <typeparam name="T">シーケンスの要素の型</typeparam>
-        /// <returns>元のシーケンス</returns>
-        public static IEnumerable<T> Do<T>(this IEnumerable<T> source, Action<T> action)
-        {
-            foreach (var item in source)
-            {
-                action(item);
-            }
-            return source;
-        }
-
-        /// <summary>
-        /// パイプライン演算子のようにデータを変換する（関数を適用する）
-        /// </summary>
-        /// <param name="arg">変換するデータ</param>
-        /// <param name="func">変換</param>
-        /// <typeparam name="T">変換元のデータの型</typeparam>
-        /// <typeparam name="TR">変換先のデータの型</typeparam>
-        /// <returns>変換されたデータ</returns>
-        public static TR Apply<T, TR>(this T arg, Func<T, TR> func)
-        {
-            return func(arg);
-        }
-
-        /// <summary>
-        /// データから副作用（出力や破壊的代入など）を生み、データを返す
-        /// </summary>
-        /// <param name="item">元のデータ</param>
-        /// <param name="effect">副作用（出力や破壊的代入など）</param>
-        /// <typeparam name="T">データの型</typeparam>
-        /// <returns>副作用を起こした後のデータ</returns>
-        public static T Effect<T>(this T item, Action<T> effect)
-        {
-            effect(item);
-            return item;
         }
 
         /// <summary>
