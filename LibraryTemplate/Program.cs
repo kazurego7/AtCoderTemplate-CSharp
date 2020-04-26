@@ -214,58 +214,6 @@ namespace AtCoderTemplate
             return !IsEven(a);
         }
 
-        // /// <summary>
-        // /// 冪を得る
-        // /// </summary>
-        // /// <param name="b">底</param>
-        // /// <param name="n">冪指数</param>
-        // /// <param name="divisor">返り値がintを超えないようにdivisorで割ったあまりを得る</param>
-        // /// <returns>bのn乗(をdivisorで割ったあまり)</returns>
-        // public static int PowRem (long b, int n, int divisor) {
-        //     return Enumerable.Repeat (b, n)
-        //         .Aggregate (1, (accm, i) => (int) ((accm * i) % divisor));
-        // }
-
-        // /// <summary>
-        // /// 順列の総数を得る
-        // /// O(N-K)
-        // /// </summary>
-        // /// <param name="n">全体の数</param>
-        // /// <param name="k">並べる数</param>
-        // /// <param name="divisor">返り値がintを超えないようにdivisorで割った余りを得る</param>
-        // /// <returns>nPk (をdivisorで割った余り)</returns>
-        // public static int nPk (int n, int k, int divisor) {
-        //     if (k > n) {
-        //         return 0;
-        //     } else {
-        //         return Enumerable.Range (n - k + 1, k).Aggregate (1, ((i, m) => (i * m) % divisor));
-        //     }
-        // }
-
-        // /// <summary>
-        // /// 階乗を得る
-        // /// O(N)
-        // /// </summary>
-        // /// <param name="n"></param>
-        // /// <param name="divisor">返り値がintを超えないようにdivisorで割った余りを得る</param>
-        // /// <returns>n! (をdivisorで割った余り)</returns>
-        // public static int Fact (int n, int divisor) {
-        //     return nPk (n, n, divisor);
-        // }
-
-        // /// <summary>
-        // /// 階乗のテーブルを得る
-        // /// O(N)
-        // /// </summary>
-        // /// <param name="nmax"></param>
-        // /// <param name="divisor">返り値がintを超えないようにdivisorで割った余りを得る</param>
-        // /// <returns></returns>
-        // public static int[] FactTable (int nmax, int divisor) {
-        //     return Enumerable.Range (1, nmax)
-        //         .Scanl (1, (accm, i) => (int) ((long) accm * i % divisor))
-        //         .ToArray ();
-        // }
-
         public static int[,] PascalsTriangle(int nmax, int kmax, int divisor)
         {
             var comb = new int[2000 + 1, 2000 + 1];
@@ -573,52 +521,11 @@ namespace AtCoderTemplate
             return ok;
         }
 
-        public static void TreeBFS(
-            int nodeCount,
-            IEnumerable<int> initialNodes,
-            Func<int, IEnumerable<int>> getChilds,
-            Predicate<int> continuePred,
-            Action<int, int> updateItem)
-        {
-
-            var que = new Queue<int>();
-            var visited = new bool[nodeCount];
-            foreach (var node in initialNodes)
-            {
-                que.Enqueue(node);
-                visited[node] = true;
-            }
-
-            while (!que.IsEmpty())
-            {
-                var parent = que.Dequeue();
-                foreach (var child in getChilds(parent))
-                {
-                    if (visited[child] || continuePred(child)) continue;
-                    updateItem(parent, child);
-                    que.Enqueue(child);
-                    visited[child] = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// indexの列で文字列を分割する
-        /// </summary>
-        /// <param name="source">元の文字列</param>
-        /// <param name="cutIndexes">分割する位置の列</param>
-        /// <returns>分割された文字列</returns>
-        /// <example>CutForIndexes("abcdef", [0, 2, 3, 5, 6]) => ["ab", "c", "de", "f"]</example>
-        public static IEnumerable<string> CutForIndexes(string source, IEnumerable<int> cutIndexes)
-        {
-            return cutIndexes.MapAdjacent((i0, i1) => source.Substring(i0, i1 - i0));
-        }
-
         /// <summary>
         /// ランレングス符号化
         /// </summary>
         /// <param name="source">元の文字列</param>
-        /// <returns>それぞれ連続した文字をひとまとめにし、その文字と長さのペアの列を得る</returns>
+        /// <returns>連続した文字をひとまとめにし、その文字と長さのペアの列を得る</returns>
         /// <example>RunLengthEncoding("aaabccdddd") => [(a,3), (b,1), (c,2), (d,4)]</example>
         public static IEnumerable<Tuple<string, int>> RunLengthEncoding(string source)
         {
@@ -682,82 +589,6 @@ namespace AtCoderTemplate
             }
             return l;
         }
-
-        /// <summary>
-        /// グラフの辺
-        /// </summary>
-        public struct Edge
-        {
-            public int SourceNode { get; }
-            public int TargetNode { get; }
-            public long Weight { get; }
-
-            public Edge(int sourceNode, int targetNode, long weight)
-            {
-                SourceNode = sourceNode;
-                TargetNode = targetNode;
-                Weight = weight;
-            }
-        }
-
-        public static IEnumerable<Edge> CreateEdges(List<int> sourceNodes, List<int> targetNodes, List<long> weights)
-        {
-            return Enumerable.Range(0, sourceNodes.Count)
-                .Select(i => new Edge(sourceNode: sourceNodes[i], targetNode: targetNodes[i], weight: weights[i]));
-        }
-
-        public static List<Dictionary<int, long>> CreateAdjacencyListOfUndirectedGraph(IEnumerable<Edge> edges, int nodeNum)
-        {
-            var adjacencyList = Enumerable.Range(0, nodeNum).Select(_ => new Dictionary<int, long>()).ToList();
-            foreach (var edge in edges)
-            {
-                adjacencyList[edge.SourceNode].Add(edge.TargetNode, edge.Weight);
-                adjacencyList[edge.TargetNode].Add(edge.SourceNode, edge.Weight);
-            }
-            return adjacencyList;
-        }
-
-        public static List<List<long>> CreateAdjacencyMatrixOfUndirectedGraph(IEnumerable<Edge> edges, int nodeNum, long weightOfNoEdge)
-        {
-            var adjacencyMatrix = Enumerable.Range(0, nodeNum)
-                .Select(i =>
-                   Enumerable.Range(0, nodeNum)
-                   .Select(k =>
-                      weightOfNoEdge
-                   ).ToList()
-                ).ToList();
-            foreach (var edge in edges)
-            {
-                adjacencyMatrix[edge.SourceNode][edge.TargetNode] = edge.Weight;
-                adjacencyMatrix[edge.TargetNode][edge.SourceNode] = edge.Weight;
-            }
-            return adjacencyMatrix;
-        }
-
-        /// <summary>
-        /// ワーシャルフロイド法
-        /// O(N^3)
-        /// </summary>
-        /// <param name="adjacencyMatrix">隣接行列</param>
-        /// <param name="nodeNum">ノードの数</param>
-        /// <returns>各ノード間の最短距離を重みとする隣接行列</returns>
-        public static List<List<long>> WarshallFloyd(List<List<long>> adjacencyMatrix)
-        {
-            var nodeNum = adjacencyMatrix.Count;
-            var res = Enumerable.Range(0, nodeNum).Select(i => new List<long>(adjacencyMatrix[i])).ToList();
-            foreach (var b in Enumerable.Range(0, nodeNum))
-            {
-                foreach (var a in Enumerable.Range(0, nodeNum))
-                {
-                    foreach (var c in Enumerable.Range(0, nodeNum))
-                    {
-                        res[a][c] = Min(res[a][c], res[a][b] + res[b][c]);
-                    }
-                }
-            }
-            return res;
-        }
-
     }
 
     public static class MyDataStructure
