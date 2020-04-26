@@ -884,4 +884,187 @@ namespace AtCoderTemplate
             return indexes;
         }
     }
+    public static class Template
+    {
+        public static void TreeBFS()
+        {
+            // 与えられた頂点数と辺
+            var N = ReadInt();
+            var ab = ReadColumns(N, 2);
+            var a = ab[0].ToInts();
+            var b = ab[1].ToInts();
+
+            // 木構造の初期化
+            var tree = MyEnumerable.Interval(0, N)
+            .Select(i => new List<int>())
+            .ToList();
+
+            foreach (var i in MyEnumerable.Interval(0, N - 1))
+            {
+                tree[a[i] - 1].Add(b[i] - 1);
+                tree[b[i] - 1].Add(a[i] - 1);
+            }
+
+            var order = new Queue<int>();   // BFS
+            // var order = new Stack<int>();   // DFS
+
+            var reached = Enumerable.Repeat(false, N)
+            .ToArray();
+
+            // 最初の頂点を追加
+            order.Enqueue(0);
+            reached[0] = true;
+
+            // 求めたい値
+            var ans = false;
+
+            // 実行
+            while (!order.IsEmpty())
+            {
+                var node = order.Dequeue(); // 現在見ている頂点
+                Func<int, bool> pruningCondition = child => false; // 枝刈り条件
+                var nexts = tree[node]
+                .Where(child => !reached[child] && !pruningCondition(child));
+
+                // ************** 処理 *******************
+
+                // 現在の頂点による処理
+
+                // 現在の頂点と、次の頂点による処理
+                foreach (var next in nexts)
+                {
+
+                }
+
+                // ***************************************
+
+                foreach (var next in nexts)
+                {
+                    order.Enqueue(next);
+                    reached[next] = true;
+                }
+            }
+        }
+
+        public static void GridGraphBFS()
+        {
+            // 与えられた高さと幅のグリッドグラフ
+            var HW = ReadInts();
+            var H = HW[0];
+            var W = HW[1];
+            var S = ReadGridGraph(H, W);
+
+            var order = new Queue<(int, int)>();
+            var reached = new bool[H, W];
+            foreach (var h in MyEnumerable.Interval(0, H))
+            {
+                foreach (var w in MyEnumerable.Interval(0, W))
+                {
+                    reached[h, w] = false;
+                }
+            }
+
+            // 最初の頂点を追加
+            order.Enqueue((0, 0));
+            reached[0, 0] = true;
+
+            // 求めたい値
+            var ans = false;
+
+            // 実行
+            while (!order.IsEmpty())
+            {
+                var (y0, x0) = order.Dequeue();
+
+                // 周りのマス
+                var allSides = new[]{
+                    (y0, x0 -1 ),   // left
+                    (y0 - 1, x0),   // up
+                    (y0, x0 + 1),   // right
+                    (y0 + 1, x0),   // down
+                }
+                .Where(t =>
+                {
+                    var (y, x) = t;
+                    return 0 <= y && y < H && 0 <= x && x < W;
+                });
+
+                // 枝刈り条件
+                Func<int, int, bool> pruningCondition = (y, x) => false;
+
+                var nexts = allSides
+                    .Where(t =>
+                    {
+                        var (y, x) = t;
+                        return !reached[y, x] && !pruningCondition(y, x);
+                    });
+
+                // **************** 処理 ******************
+
+                // 現在の頂点による処理
+
+                // 現在の頂点と、次の頂点による処理
+                foreach (var (y, x) in nexts)
+                {
+
+                }
+
+                // ****************************************
+
+                foreach (var next in nexts)
+                {
+                    var (y, x) = next;
+                    order.Enqueue(next);
+                    reached[y, x] = true;
+                }
+            }
+        }
+
+        public static void WarshallFloyd()
+        {
+            // グラフの入力
+            var NM = ReadInts();
+            var N = NM[0];
+            var M = NM[1];
+            var abc = ReadColumns(M, 3);
+            var a = abc[0].ToInts();
+            var b = abc[1].ToInts();
+            var c = abc[2].ToInts();
+
+            // 隣接行列の初期化
+            var inf = (long)Pow(2L, 60);
+            var G = new long[N, N];
+            foreach (var h in MyEnumerable.Interval(0, N))
+            {
+                foreach (var w in MyEnumerable.Interval(0, N))
+                {
+                    if (h == w)
+                    {
+                        G[h, w] = 0L;
+                    }
+                    else
+                    {
+                        G[h, w] = inf;
+                    }
+                }
+            }
+            foreach (var i in MyEnumerable.Interval(0, M))
+            {
+                G[a[i], b[i]] = c[i];
+                G[b[i], a[i]] = c[i];
+            }
+
+            // 実行
+            foreach (var k in MyEnumerable.Interval(0, N))
+            {
+                foreach (var i in MyEnumerable.Interval(0, N))
+                {
+                    foreach (var j in MyEnumerable.Interval(0, N))
+                    {
+                        G[i, j] = Min(G[i, j], G[i, k] + G[k, j]);
+                    }
+                }
+            }
+        }
+    }
 }
