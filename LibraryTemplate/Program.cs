@@ -589,6 +589,17 @@ namespace AtCoderTemplate
             }
             return l;
         }
+
+        /// <summary>
+        /// フラグが立っているか判定する
+        /// </summary>
+        /// <param name="flags">フラグ</param>
+        /// <param name="digit">判定する桁目</param>
+        /// <returns>digit のフラグが立っていれば true</returns>
+        public static bool IsFlag(long flags, int digit)
+        {
+            return ((flags >> digit) & 1L) == 1L;
+        }
     }
 
     public static class MyDataStructure
